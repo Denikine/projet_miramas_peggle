@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 Capture cam_;
 OpenCV opencv_;
 
@@ -17,12 +18,15 @@ OpenCV opencv_;
 PImage bg;
 List<Image> images = new ArrayList<Image>();
 float scanner = 0;
+//Image[] images = new Image[5];
+PImage projectile;
+PImage floating_square;
 PImage floating_img;
 int screen_width;
 int screen_height;
+float axe_ball;
 PImage gun;
 float y = 180;
-PImage brick_pink;
 PImage surface;
 PFont font;
 String time = "060";
@@ -32,7 +36,8 @@ int state = 0;
 PImage ball_image;
 boolean image_bool;
 int ball;
-float axe_ball;
+PImage brick_pink;
+PImage brick_green;
 
 //==================
 
@@ -113,36 +118,33 @@ void setup(){
     flow_.setPolyN(3); // default : 7
     flow_.setPolySigma(1.5); // default : 1.5
     
-    int m = 10;
-    int w = 90;
-    int h = 70;
-    
+    int m = 100;
+    int w = 130;
+    int h = 180;
     int x = m;
     int y = m;
-    //hotSpots_[0] = new HotSpot(x,y,w,h);
-    //x = videoWidth_ / 2 - w / 2;
-    //hotSpots_[1] = new HotSpot(x,y,w,h);
-    //x = videoWidth_ - m - w;
-    //hotSpots_[2] = new HotSpot(x,y,w,h);
     
-    x = m;
-    y = videoHeight_ - m - h;
+    //x = m;    
+    x = 0;
+    y = 0;
     hotSpots_[0] = new HotSpot(x,y,w,h);
     
-    x = videoWidth_ / 2 - w / 2;
+    x = videoWidth_ / 2 - m/2 + m/5;
+    y = videoHeight_ / 2 - h / 2;
+    w = 190;
     hotSpots_[1] = new HotSpot(x,y,w,h);
-    
-    x = videoWidth_ - m - w;
-    hotSpots_[2] = new HotSpot(x,y,w,h);
+  
     
     cam_.start();     
   }
 // ================
 // FIN SETUP OPENCV
   
+
   
   // état du jeu
   //state = 0;
+
   
   // canon ===
   gun = loadImage("../prod/gun2.png");
@@ -150,8 +152,8 @@ void setup(){
   surface = loadImage("../prod/surface.png");
   // briques
   brick_pink = loadImage("../prod/brick_pink.png");
-  // floating image
-  floating_img = loadImage("../prod/bubble.png");
+  brick_green = loadImage("../prod/brick_green.png");
+  // projectile
   ball_image = loadImage("../prod/bulle_tiny.png");
 
   // font
@@ -161,13 +163,13 @@ void setup(){
   //images[0].affiche();
   //Image.Image(brick_pink, 180, 90);
   images.add(new Image(brick_pink,300,300, brick_pink.width* 3,brick_pink.height* 2));
-  // affichage floating square ===
   images.add(new Image(brick_pink,180,90, brick_pink.width* 3,brick_pink.height* 2));
   images.add(new Image(brick_pink,1700,180, brick_pink.width* 3,brick_pink.height* 2));
-    images.add(new Image(brick_pink,1300,80, brick_pink.width* 3,brick_pink.height* 2));
+  images.add(new Image(brick_pink,1300,80, brick_pink.width* 3,brick_pink.height* 2));
   images.add(new Image(brick_pink,890,245, brick_pink.width* 3,brick_pink.height* 2));
+  images.add(new Image(brick_green,600,120, brick_green.width*3,brick_green.height*2));
 
-  
+
 }
 
 // ====================
@@ -177,7 +179,7 @@ void setup(){
 // =====================
 void detectHotSpots() {
   
-  for ( int k = 0 ; k < 3 ; k++ ) {
+  for ( int k = 0 ; k < 2 ; k++ ) {
     
     HotSpot hs = hotSpots_[k];
     
@@ -246,7 +248,7 @@ void detectHotSpots() {
 void drawHotSpots() {
   noFill();
   strokeWeight(1.);
-  for ( int k = 0 ; k < 3 ; k++ ) { 
+  for ( int k = 0 ; k < 2 ; k++ ) { 
     stroke(255,0,0);
     if ( ( selectedHotSpotIndex_ >= 0 ) && ( k == selectedHotSpotIndex_ ) ) {
       stroke(0,255,0);
@@ -261,15 +263,15 @@ void drawHotSpots() {
 
 // =============
 void draw(){
-  
-  
 
   // affichage background
+
   background(bg);
   
   // affichage laser ===
-  stroke(226,204,0);
+  //stroke(226,204,0);
   //line(scanner,0,scanner,height);
+  
   // affichage canon ===
   image(gun, scanner-32, height-240, gun.width*3, gun.height*3);
   
@@ -290,17 +292,17 @@ void draw(){
   else if (keyCode == RIGHT) {
     scanner = scanner +10;
   }
-  if (scanner > width) { 
-    scanner = 0; 
+  if (scanner > width-160) { 
+    scanner = width-160; 
   }
-  if (scanner < 0) { 
-    scanner = width; 
+  if (scanner < 36) { 
+    scanner = 36; 
   }
-  
+
 // ================
   
 // === CAMERA ===
-// protéger avec push matrix et pop matrix
+
 
 pushMatrix();
 synchronized(this) {
@@ -376,12 +378,33 @@ popMatrix();
 
   
   // affichage floating image ===
-  image(floating_img, mouseX-floating_img.width/12, mouseY+floating_img.height/12, floating_img.width*2, floating_img.height*2);
+  //image(floating_img, mouseX-floating_img.width/12, mouseY+floating_img.height/12, floating_img.width*2, floating_img.height*2);
   
   // affichage surface
   image(surface, 0,0);
   
+  for(int i=0;i<images.size()-1;i++)
+  {
+      images.get(i).affiche();
+  }
+
   
+  // affichage image  ===
+  //image(projectile, 0, 0);
+  //image(projectile, 300, height/2, projectile.width/2, projectile.height/2);
+
+
+  //image(floating_square, spacement_x, spacement_y);
+  //spacement_x++;
+  //spacement_y++;
+  //for (spacement_x <1920 && spacement_y <1080) {
+  //  spacement_x=spacement_x+150;
+  //  spacement_y=spacement_y+150
+  //}
+  //image(floating_square, mouseX-floating_square.width/2, mouseY-floating_square.height/2);
+  
+  // affichage floating image ===
+  //image(floating_img, mouseX-floating_img.width/4, mouseY-floating_img.height/6, floating_img.width/2, floating_img.height/2);
   if(image_bool==true)
   {
     Image ball_img=new Image(ball_image,int(axe_ball),height-80-ball, ball_image.width/4, ball_image.height/4);
@@ -410,6 +433,7 @@ popMatrix();
     if(image_bool==true)
     {
       
+
     ball=ball+8;
     if (ball > screen_height) {
        ball = 0;
@@ -418,6 +442,7 @@ popMatrix();
     ball++;
   }
   }
+
   
 // ================== 
  
@@ -425,7 +450,7 @@ popMatrix();
 
 //============================
 void captureEvent(Capture c) {
-  
+
   synchronized(this) {
     
     c.read();
@@ -441,6 +466,9 @@ void captureEvent(Capture c) {
   }
   
 }
+
+void colliderBall()
+{}
 
 //=================
 void keyPressed() {
